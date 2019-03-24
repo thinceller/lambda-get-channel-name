@@ -5,10 +5,10 @@ const cheerio = require('cheerio');
 
 module.exports.index = async (event, context, callback) => {
   try {
-    const channelName = await scrapeChannelName(event.id);
+    const res = await scrapeChannelName(event.id);
     const result = {
       statusCode: 200,
-      body: { channelName }
+      body: res
     };
     callback(null, result);
   } catch (e) {
@@ -41,7 +41,8 @@ const scrapeChannelName = id => {
       try {
         const $ = cheerio.load(body);
         const channelTitle = $('meta[name="title"]').attr('content');
-        resolve(channelTitle);
+        const image = $('meta[property="og:image"]').attr('content');
+        resolve({ channelTitle, image });
       } catch (e) {
         console.log(e);
         reject({
