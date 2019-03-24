@@ -8,7 +8,11 @@ module.exports.index = async (event, context, callback) => {
     const res = await scrapeChannelName(event.id);
     const result = {
       statusCode: 200,
-      body: res
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true
+      },
+      body: JSON.stringify(res)
     };
     callback(null, result);
   } catch (e) {

@@ -22,7 +22,7 @@ provider:
   runtime: nodejs8.10
 
 # you can overwrite defaults here
-  stage: dev
+  stage: ${opt:state, self:custom.defaultStage}
   region: ap-northeast-1
 
 # you can add statements to the Lambda function's IAM Role here
@@ -61,14 +61,48 @@ functions:
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
-    events:
+    events: ${self:custom.events.${opt:stage, 'dev'}}
+
+custom:
+  defaultStage: dev
+  events:
+    prod:
       - http:
-          path: name
+          path: /
           method: get
           integration: lambda
           request:
             template:
               application/json: '{ "id" : "$input.params("id")" }'
+          cors:
+            origin: https://channel-name-list.firebaseapp.com
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+    dev:
+      - http:
+          path: /
+          method: get
+          integration: lambda
+          request:
+            template:
+              application/json: '{ "id" : "$input.params("id")" }'
+          cors:
+            origin: http://localhost:3000
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+
 #      - s3: ${env:BUCKET}
 #      - schedule: rate(10 minutes)
 #      - sns: greeter-topic
